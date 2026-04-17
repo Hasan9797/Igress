@@ -9,15 +9,15 @@ export class IntegrationService {
 
   async processIncomingWebhook(data: any) {
     try {
-      // Birinchi navbatda RabbitMQ-ga yuborishga harakat qilamiz
       await this.rabbit.emit(RabbitPatterns.FINE_CREATED, data);
     } catch (error: any) {
-      // Agar RabbitMQ o'chiq bo'lsa yoki networkda xato bo'lsa
       await this.handleFailedDelivery(data, error.message);
     }
   }
 
   private async handleFailedDelivery(data: any, reason: string) {
+    console.log('RabbitMQ Connection Refused');
+    
     // 1. DB-ga xabarni keyinchalik qayta yuborish (Retry) uchun saqlaymiz
     // await this.db.failedFines.insert({
     //   payload: data,

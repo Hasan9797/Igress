@@ -15,11 +15,7 @@ export class IntegrationController {
   @Post('fines-webhook')
   @HttpCode(HttpStatus.OK)
   finesWebhook(@Body() data: any) {
-    // Biznes mantiqni fonda boshladik
     this.integrationService.processIncomingWebhook(data).catch((err) => {
-      // Agar processIncomingWebhook ichida biron bir kutilmagan
-      // "portlash" bo'lsa, u mana shu yerga keladi.
-      // Server o'chib qolmaydi, shunchaki xatoni konsolga yozadi.
       Logger.error('Background process error:', err);
     });
 
