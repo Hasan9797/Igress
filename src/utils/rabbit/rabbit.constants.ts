@@ -1,13 +1,14 @@
-export const RABBIT_SERVICE_NAME = 'RABBIT_MQ_CLIENT';
+export const RABBIT_PREPARE_CLIENT = 'PREPARE_CLIENT';
+export const RABBIT_WORKER_CLIENT = 'WORKER_CLIENT';
 
 // 2. Navbatlar ro'yxati (Enum ko'rinishida)
 export enum RabbitQueues {
-  FINES_QUEUE = 'fines_queue',
-  DRIVERS_QUEUE = 'drivers_queue',
+  PREPARE_FINES_QUEUE = 'prepare_fines_queue',
+  WORKER_FINES_QUEUE = 'worker_fines_queue',
 }
 
 export enum RabbitPatterns {
-  FINE_CREATED = 'fine_created_event', // Webhookdan kelgan jarima
-  FINE_UPDATED = 'fine_updated_event', // Jarima o'zgarganda
+  PREPARE_FINES = 'prepare_fines_event', // Webhookdan kelgan jarima
+  WORKER_FINES = 'worker_fines_event', // Workerga yuboriladigan jarima
   FINE_ERROR = 'fine_error_event', // Xatolik xabari uchun
 }

@@ -1,4 +1,3 @@
-import { RabbitPatterns } from '@/utils/rabbit/rabbit.constants';
 import { RabbitService } from '@/utils/rabbit/rabbit.service';
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -9,7 +8,7 @@ export class IntegrationService {
 
   async processIncomingWebhook(data: any) {
     try {
-      await this.rabbit.emit(RabbitPatterns.FINE_CREATED, data);
+      await this.rabbit.emitToPrepare(data);
     } catch (error: any) {
       await this.handleFailedDelivery(data, error.message);
     }
@@ -17,7 +16,7 @@ export class IntegrationService {
 
   private async handleFailedDelivery(data: any, reason: string) {
     console.log('RabbitMQ Connection Refused');
-    
+
     // 1. DB-ga xabarni keyinchalik qayta yuborish (Retry) uchun saqlaymiz
     // await this.db.failedFines.insert({
     //   payload: data,
