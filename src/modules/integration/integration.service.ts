@@ -1,10 +1,14 @@
-import { RabbitService } from '@/utils/rabbit/rabbit.service';
+import { RabbitService } from '@/infrastructure/rabbit/rabbit.service';
 import { Injectable, Logger } from '@nestjs/common';
+import { FailedFinesService } from '../failed-fines/failed-fines.service';
 
 @Injectable()
 export class IntegrationService {
   private readonly logger = new Logger(IntegrationService.name);
-  constructor(private readonly rabbit: RabbitService) {}
+  constructor(
+    private readonly rabbit: RabbitService,
+    private readonly failedFinesService: FailedFinesService,
+  ) {}
 
   async processIncomingWebhook(data: any) {
     try {
@@ -14,16 +18,16 @@ export class IntegrationService {
     }
   }
 
-  private async handleFailedDelivery(data: any, reason: string) {
+  private async handleFailedDelivery(data: any, message: string) {
     console.log('RabbitMQ Connection Refused');
 
     // 1. DB-ga xabarni keyinchalik qayta yuborish (Retry) uchun saqlaymiz
-    // await this.db.failedFines.insert({
-    //   payload: data,
-    //   error_message: reason,
-    //   status: 'PENDING_RETRY',
-    //   created_at: new Date(),
-    // });
+    await this.failedFinesService.create({
+      webhookData: data,
+      error_message: message,
+      status: 'PENDING_RETRY',
+      created_at: new Date(),
+    });
     // 2. Telegramga xabar berish (ixtiyoriy)
     // await this.telegram.notify(`🚨 RabbitMQ error: Jarima DB-ga saqlandi.`);
   }

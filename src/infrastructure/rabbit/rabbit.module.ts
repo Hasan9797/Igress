@@ -37,6 +37,6 @@ const commonRmqOptions = (config: ConfigService, queue: string) => ({
     ]),
   ],
   providers: [RabbitService],
-  exports: [ClientsModule, RabbitService],
+  exports: [RabbitService],
 })
 export class RabbitModule {}

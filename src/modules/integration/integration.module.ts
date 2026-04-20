@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { IntegrationService } from './integration.service';
 import { IntegrationController } from './integration.controller';
-import { RabbitModule } from '@/utils/rabbit/rabbit.module';
+import { RabbitModule } from '@/infrastructure/rabbit/rabbit.module';
+import { FailedFinesModule } from '../failed-fines/failed-fines.module';
 
 @Module({
-  imports: [RabbitModule],
+  imports: [RabbitModule, FailedFinesModule],
   controllers: [IntegrationController],
   providers: [IntegrationService],
 })
