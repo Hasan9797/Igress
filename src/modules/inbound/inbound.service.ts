@@ -22,11 +22,9 @@ export class IntegrationService {
     console.log('RabbitMQ Connection Refused');
 
     // 1. DB-ga xabarni keyinchalik qayta yuborish (Retry) uchun saqlaymiz
-    await this.failedFinesService.create({
+    await this.failedFinesService.saveFailedFine({
       webhookData: data,
       error_message: message,
-      status: 'PENDING_RETRY',
-      created_at: new Date(),
     });
     // 2. Telegramga xabar berish (ixtiyoriy)
     // await this.telegram.notify(`🚨 RabbitMQ error: Jarima DB-ga saqlandi.`);

@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import {
   Injectable,
   OnModuleInit,
@@ -18,11 +19,11 @@ export class PrismaService
     super({
       datasources: {
         db: {
-          url: config.get<string>('database.url'),
+          url: config.getOrThrow<string>('database.url'),
         },
       },
       log: config.get<any>('database.logLevel'),
-    });
+    } as Prisma.PrismaClientOptions);
   }
 
   async onModuleInit() {

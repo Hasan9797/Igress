@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { IntegrationService } from './integration.service';
+import { IntegrationService } from './inbound.service';
 
 @Controller('integrations')
 export class IntegrationController {

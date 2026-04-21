@@ -15,8 +15,8 @@ export class FailedFinesService {
       // DB-ga saqlash logikasi (masalan, TypeORM yoki Prisma orqali)
       await this.prisma.failedFines.create({
         data: {
-          response: data,
-          message: 'RabbitMQ Connection Refused',
+          response: data.webhookData,
+          message: data.error_message || 'Unknown error',
         },
       });
     } catch (error: any) {
