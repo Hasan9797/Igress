@@ -1,20 +1,39 @@
 import { RabbitService } from '@/infrastructure/rabbit/rabbit.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { FailedFinesService } from '../failed-fines/failed-fines.service';
+import { PartnerType } from '@/common/enums/partner-type.enum';
 
 @Injectable()
-export class IntegrationService {
-  private readonly logger = new Logger(IntegrationService.name);
+export class InboundService {
+  private readonly logger = new Logger(InboundService.name);
   constructor(
     private readonly rabbit: RabbitService,
     private readonly failedFinesService: FailedFinesService,
   ) {}
 
-  async processIncomingWebhook(data: any) {
+  async processIncomingWebhookTelecomSoft(data: any) {
+    const queueData = {
+      ...data,
+      source: PartnerType.TELECOM_SOFT,
+    };
+
     try {
-      await this.rabbit.emitToPrepare(data);
+      await this.rabbit.emitToPrepare(queueData);
     } catch (error: any) {
-      await this.handleFailedDelivery(data, error.message);
+      await this.handleFailedDelivery(queueData, error.message);
+    }
+  }
+
+  async processIncomingWebhookASBT(data: any) {
+    const queueData = {
+      ...data,
+      source: PartnerType.ASBT,
+    };
+
+    try {
+      await this.rabbit.emitToPrepare(queueData);
+    } catch (error: any) {
+      await this.handleFailedDelivery(queueData, error.message);
     }
   }
 

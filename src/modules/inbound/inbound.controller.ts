@@ -5,20 +5,41 @@ import {
   Body,
   HttpStatus,
   Logger,
+  HttpException,
 } from '@nestjs/common';
-import { IntegrationService } from './inbound.service';
+import { InboundService } from './inbound.service';
 
-@Controller('integrations')
-export class IntegrationController {
-  constructor(private readonly integrationService: IntegrationService) {}
+@Controller('car-fines')
+export class InboundController {
+  constructor(private readonly inboundService: InboundService) {}
 
-  @Post('fines-webhook')
+  @Post('create')
   @HttpCode(HttpStatus.OK)
-  finesWebhook(@Body() data: any) {
-    this.integrationService.processIncomingWebhook(data).catch((err) => {
-      Logger.error('Background process error:', err);
-    });
+  async createFinesByTelecomSoft(@Body() data: any) {
+    try {
+      await this.inboundService.processIncomingWebhookTelecomSoft(data);
+      return { success: true };
+    } catch (error) {
+      Logger.error('Webhook TelecomSoft, RabbitMQ-ga yuborishda xato:', error);
+      throw new HttpException(
+        'Webhook not accepted',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
 
-    return { success: true };
+  @Post('notification/synchronize')
+  @HttpCode(HttpStatus.OK)
+  async createFinesByASBT(@Body() data: any) {
+    try {
+      await this.inboundService.processIncomingWebhookASBT(data);
+      return { success: true };
+    } catch (error) {
+      Logger.error('Webhook ASBT, RabbitMQ-ga yuborishda xato:', error);
+      throw new HttpException(
+        'Webhook not accepted',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
   }
 }
