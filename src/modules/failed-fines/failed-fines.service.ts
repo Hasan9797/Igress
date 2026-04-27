@@ -10,15 +10,15 @@ export class FailedFinesService {
     private prisma: PrismaService,
   ) {}
 
-  async saveFailedFine(data: any) {
+  async saveFailedFines(data: any) {
     try {
       // DB-ga saqlash logikasi (masalan, TypeORM yoki Prisma orqali)
-      await this.prisma.failedFines.create({
-        data: {
-          response: data.webhookData,
-          message: data.error_message || 'Unknown error',
-        },
-      });
+      await this.prisma.failedFines.createMany({
+        data: data.map((item: any) => ({
+          webhookData: item,
+          error_message: 'RabbitMQ Connection Refused',
+        })),
+      })
     } catch (error: any) {
       this.logger.error(`Failed to save failed fine: ${error.message}`);
     }

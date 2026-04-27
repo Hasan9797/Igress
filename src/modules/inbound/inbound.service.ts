@@ -1,14 +1,16 @@
 import { RabbitService } from '@/infrastructure/rabbit/rabbit.service';
 import { Injectable, Logger } from '@nestjs/common';
-import { FailedFinesService } from '../failed-fines/failed-fines.service';
 import { PartnerType } from '@/common/enums/partner-type.enum';
+import { RedisService } from '@/infrastructure/redis/redis.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class InboundService {
   private readonly logger = new Logger(InboundService.name);
   constructor(
     private readonly rabbit: RabbitService,
-    private readonly failedFinesService: FailedFinesService,
+    private readonly redisService: RedisService,
   ) {}
 
   async processIncomingWebhookTelecomSoft(data: any) {
@@ -40,12 +42,35 @@ export class InboundService {
   private async handleFailedDelivery(data: any, message: string) {
     console.log('RabbitMQ Connection Refused');
 
-    // 1. DB-ga xabarni keyinchalik qayta yuborish (Retry) uchun saqlaymiz
-    await this.failedFinesService.saveFailedFine({
+    const finesData = {
       webhookData: data,
-      error_message: message,
-    });
-    // 2. Telegramga xabar berish (ixtiyoriy)
-    // await this.telegram.notify(`🚨 RabbitMQ error: Jarima DB-ga saqlandi.`);
+      message,
+    };
+
+    try {
+      // await this.telegram.notify(`🚨 RabbitMQ error: Jarima DB-ga saqlanish uchun Cache ga tushdi.`);
+      await this.redisService.addToSortedSet(
+        'failed_fines_zset',
+        Date.now(),
+        finesData,
+      );
+    } catch (error: any) {
+      // await this.telegram.notify(`🚨 Redis error: Jarima Log File ga tushdi.`);
+      const logData = {
+        timestamp: new Date().toISOString(),
+        finesData,
+        error: error.message,
+      };
+
+      // Ma'lumotni log faylga qo'shish (Append)
+      fs.appendFileSync(
+        path.join(__dirname, '../../../logs/failed_fines.log'),
+        JSON.stringify(logData) + '\n',
+      );
+
+      this.logger.error(
+        'CRITICAL: Redis ham olyapti! Ma’lumot faylga yozildi.',
+      );
+    }
   }
 }

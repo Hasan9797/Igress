@@ -18,8 +18,8 @@ model User {
 }
 
 model FailedFines {
-  id        String   @id @default(uuid())
-  message   String
-  response  Json
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  message     String?
+  webhookData Json     @map("webhook_data")
+  createdAt   DateTime @default(now())
 }
