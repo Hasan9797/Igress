@@ -8,17 +8,20 @@ import { RabbitModule } from './infrastructure/rabbit/rabbit.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { JobsModule } from './modules/jobs/jobs.module';
+import { DrizzleModule } from './infrastructure/drizzle/drizzle.module';
+import databaseConfig from './common/config/database.config';
 import redisConfig from './common/config/redis.config';
+import rabbitConfig from './common/config/rabbit.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [redisConfig],
       isGlobal: true,
-      cache: true,
+      load: [databaseConfig, redisConfig, rabbitConfig],
     }),
     ScheduleModule.forRoot(),
     RedisModule,
+    DrizzleModule,
     InboundModule,
     JobsModule,
     FailedFinesModule,

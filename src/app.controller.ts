@@ -22,7 +22,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @EventPattern(RabbitPatterns.PREPARE_FINES)
+  @EventPattern(RabbitPatterns.FINES_RECEIVED)
   async handleFineCreated(@Payload() data: any, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
@@ -56,7 +56,7 @@ export class AppController {
       const batchData = [...this.buffer];
       const batchMessages = [...this.messagesToAck];
 
-      await this.rabbit.emitToWorker(batchData);
+      await this.rabbit.emitToCollected(batchData);
 
       console.log(`--- ${batchData.length} ta xabar Batch qilib yuborildi ---`);
 

@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
-  RABBIT_PREPARE_CLIENT,
-  RABBIT_WORKER_CLIENT,
+  RABBIT_RECEIVED_CLIENT,
+  RABBIT_COLLECTED_CLIENT,
   RabbitPatterns,
 } from './rabbit.constants';
 import { firstValueFrom, timeout } from 'rxjs';
@@ -12,22 +12,22 @@ export class RabbitService {
   private readonly logger = new Logger(RabbitService.name);
 
   constructor(
-    @Inject(RABBIT_PREPARE_CLIENT) private readonly prepareClient: ClientProxy,
-    @Inject(RABBIT_WORKER_CLIENT) private readonly workerClient: ClientProxy,
+    @Inject(RABBIT_RECEIVED_CLIENT) private readonly receivedClient: ClientProxy,
+    @Inject(RABBIT_COLLECTED_CLIENT) private readonly collectedClient: ClientProxy,
   ) {}
 
-  async emitToPrepare(data: any) {
+  async emitToReceived(data: any) {
     return this.baseEmit(
-      this.prepareClient,
-      RabbitPatterns.PREPARE_FINES,
+      this.receivedClient,
+      RabbitPatterns.FINES_RECEIVED,
       data,
     );
   }
 
-  async emitToWorker(batchData: any[]) {
+  async emitToCollected(batchData: any[]) {
     return this.baseEmit(
-      this.workerClient,
-      RabbitPatterns.WORKER_FINES,
+      this.collectedClient,
+      RabbitPatterns.FINES_COLLECTED,
       batchData,
     );
   }
@@ -57,7 +57,7 @@ export class RabbitService {
   async send(pattern: string, data: any) {
     try {
       return await firstValueFrom(
-        this.workerClient.send(pattern, data).pipe(timeout(5000)),
+        this.collectedClient.send(pattern, data).pipe(timeout(5000)),
       );
     } catch (error: any) {
       this.logger.error(`RabbitMQ send error: ${error.message}`);

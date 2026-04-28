@@ -13,29 +13,25 @@ export class CronTasksService {
 
   // Har minutda ishlaydi
   @Cron(CronExpression.EVERY_MINUTE, {
-    name: 'minuteCron',
+    name: 'redis-fines-to-db',
   })
   async handleMinuteCron() {
     this.logger.debug('Har minutda bajariladigan vazifa ishga tushdi');
     const currentTime = Date.now();
 
     const fines = await this.redisService.getFromZset(
-      'failed_fines_zset',
+      'failed_fines',
       0,
       currentTime,
     );
 
-    if (fines.length > 0) {
+    if (fines && fines.length > 0) {
       const parsedFines = fines.map((f) => JSON.parse(f));
+      console.log(parsedFines);
 
       try {
         await this.failedFinesService.saveFailedFines(parsedFines);
-
-        await this.redisService.removeFromZset(
-          'failed_fines_zset',
-          0,
-          currentTime,
-        );
+        await this.redisService.removeFromZset('failed_fines', 0, currentTime);
       } catch (error: any) {
         this.logger.error('DBga yozishda xato: ' + error.message);
       }

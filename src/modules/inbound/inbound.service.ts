@@ -20,9 +20,10 @@ export class InboundService {
     };
 
     try {
-      await this.rabbit.emitToPrepare(queueData);
+      await this.rabbit.emitToReceived(queueData);
     } catch (error: any) {
-      await this.handleFailedDelivery(queueData, error.message);
+      this.logger.error('Error processing webhook: ', error.message);
+      await this.handleFailedDelivery(queueData);
     }
   }
 
@@ -33,32 +34,28 @@ export class InboundService {
     };
 
     try {
-      await this.rabbit.emitToPrepare(queueData);
+      await this.rabbit.emitToReceived(queueData);
     } catch (error: any) {
-      await this.handleFailedDelivery(queueData, error.message);
+      this.logger.error('Error processing webhook: ', error.message);
+      await this.handleFailedDelivery(queueData);
     }
   }
 
-  private async handleFailedDelivery(data: any, message: string) {
+  private async handleFailedDelivery(webhookData: any) {
     console.log('RabbitMQ Connection Refused');
-
-    const finesData = {
-      webhookData: data,
-      message,
-    };
 
     try {
       // await this.telegram.notify(`🚨 RabbitMQ error: Jarima DB-ga saqlanish uchun Cache ga tushdi.`);
       await this.redisService.addToSortedSet(
-        'failed_fines_zset',
+        'failed_fines',
         Date.now(),
-        finesData,
+        webhookData,
       );
     } catch (error: any) {
       // await this.telegram.notify(`🚨 Redis error: Jarima Log File ga tushdi.`);
       const logData = {
         timestamp: new Date().toISOString(),
-        finesData,
+        finesData: webhookData,
         error: error.message,
       };
 

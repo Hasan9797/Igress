@@ -1,24 +1,16 @@
-import { RabbitService } from '@/infrastructure/rabbit/rabbit.service';
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../infrastructure/prisma/prisma.service';
-
+import { Injectable, Inject, Logger } from '@nestjs/common';
+import type { DrizzleDB } from '../../infrastructure/drizzle/drizzle.module';
+import { failedFines } from '../../infrastructure/drizzle/schema';
+import { DRIZZLE } from '@/common/constants/drizzle.constants';
 @Injectable()
 export class FailedFinesService {
   private readonly logger = new Logger(FailedFinesService.name);
-  constructor(
-    private readonly rabbit: RabbitService,
-    private prisma: PrismaService,
-  ) {}
+  constructor(@Inject(DRIZZLE) private readonly db: DrizzleDB) {}
 
-  async saveFailedFines(data: any) {
+  async saveFailedFines(data: any[]) {
     try {
-      // DB-ga saqlash logikasi (masalan, TypeORM yoki Prisma orqali)
-      await this.prisma.failedFines.createMany({
-        data: data.map((item: any) => ({
-          webhookData: item,
-          error_message: 'RabbitMQ Connection Refused',
-        })),
-      })
+      console.log(data);
+      await this.db.insert(failedFines).values(data);
     } catch (error: any) {
       this.logger.error(`Failed to save failed fine: ${error.message}`);
     }
