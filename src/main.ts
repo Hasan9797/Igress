@@ -19,7 +19,14 @@ async function bootstrap() {
       },
     },
   });
-  await app.startAllMicroservices();
+  app
+    .startAllMicroservices()
+    .then(() => {
+      console.log('Microservices are connected');
+    })
+    .catch((err) => {
+      console.error('Microservice initial connection failed, but HTTP is fine');
+    });
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

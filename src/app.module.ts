@@ -8,16 +8,18 @@ import { RabbitModule } from './infrastructure/rabbit/rabbit.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { JobsModule } from './modules/jobs/jobs.module';
-import { DrizzleModule } from './infrastructure/drizzle/drizzle.module';
 import databaseConfig from './common/config/database.config';
+import { DrizzleModule } from './infrastructure/drizzle/drizzle.module';
 import redisConfig from './common/config/redis.config';
 import rabbitConfig from './common/config/rabbit.config';
+import { TelegramModule } from './modules/telegram/telegram.module';
+import telegramConfig from './common/config/telegram.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, redisConfig, rabbitConfig],
+      load: [databaseConfig, redisConfig, rabbitConfig, telegramConfig],
     }),
     ScheduleModule.forRoot(),
     RedisModule,
@@ -26,6 +28,7 @@ import rabbitConfig from './common/config/rabbit.config';
     JobsModule,
     FailedFinesModule,
     RabbitModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [AppService],

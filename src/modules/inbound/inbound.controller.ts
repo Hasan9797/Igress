@@ -15,9 +15,9 @@ export class InboundController {
 
   @Post('create')
   @HttpCode(HttpStatus.OK)
-  async createFinesByTelecomSoft(@Body() data: any) {
+  createFinesByTelecomSoft(@Body() data: any) {
     try {
-      await this.inboundService.processIncomingWebhookTelecomSoft(data);
+      this.inboundService.processIncomingWebhookTelecomSoft(data);
       return { success: true };
     } catch (error) {
       Logger.error('Webhook TelecomSoft, RabbitMQ-ga yuborishda xato:', error);
@@ -30,9 +30,9 @@ export class InboundController {
 
   @Post('notification/synchronize')
   @HttpCode(HttpStatus.OK)
-  async createFinesByASBT(@Body() data: any) {
+  createFinesByASBT(@Body() data: any) {
     try {
-      await this.inboundService.processIncomingWebhookASBT(data);
+      this.inboundService.processIncomingWebhookASBT(data);
       return { success: true };
     } catch (error) {
       Logger.error('Webhook ASBT, RabbitMQ-ga yuborishda xato:', error);

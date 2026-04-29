@@ -24,10 +24,15 @@ export class CronTasksService {
       0,
       currentTime,
     );
-
+    console.log(fines);
+    
     if (fines && fines.length > 0) {
-      const parsedFines = fines.map((f) => JSON.parse(f));
-      console.log(parsedFines);
+      const parsedFines = fines.map((f) => {
+        return {
+          payload: JSON.parse(f),
+          message: 'RabbitMQ-error: Redis to DB',
+        };
+      });
 
       try {
         await this.failedFinesService.saveFailedFines(parsedFines);

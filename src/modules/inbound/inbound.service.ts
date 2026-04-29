@@ -2,15 +2,20 @@ import { RabbitService } from '@/infrastructure/rabbit/rabbit.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { PartnerType } from '@/common/enums/partner-type.enum';
 import { RedisService } from '@/infrastructure/redis/redis.service';
+import { TelegramService } from '@/modules/telegram/telegram.service';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Injectable()
 export class InboundService {
   private readonly logger = new Logger(InboundService.name);
+  private lastTelegramNotifyTime: number = 0;
+  private readonly TG_NOTIFY_COOLDOWN = 2 * 60 * 1000; // 2 minutes
+
   constructor(
     private readonly rabbit: RabbitService,
     private readonly redisService: RedisService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   async processIncomingWebhookTelecomSoft(data: any) {
@@ -42,32 +47,42 @@ export class InboundService {
   }
 
   private async handleFailedDelivery(webhookData: any) {
-    console.log('RabbitMQ Connection Refused');
-
+    const cachedData = {
+      _id: crypto.randomUUID(),
+      ...webhookData,
+    };
     try {
-      // await this.telegram.notify(`🚨 RabbitMQ error: Jarima DB-ga saqlanish uchun Cache ga tushdi.`);
       await this.redisService.addToSortedSet(
         'failed_fines',
         Date.now(),
-        webhookData,
+        cachedData,
+      );
+      await this.sendTelegramNotification(
+        `🚨🐇 RabbitMQ error: Jarima DB-ga saqlanish uchun Cache ga tushdi`,
       );
     } catch (error: any) {
-      // await this.telegram.notify(`🚨 Redis error: Jarima Log File ga tushdi.`);
       const logData = {
         timestamp: new Date().toISOString(),
-        finesData: webhookData,
+        finesData: cachedData,
         error: error.message,
       };
 
-      // Ma'lumotni log faylga qo'shish (Append)
-      fs.appendFileSync(
-        path.join(__dirname, '../../../logs/failed_fines.log'),
-        JSON.stringify(logData) + '\n',
+      await this.sendTelegramNotification(
+        `🚨🙀🤯 Redis error: Jarima Log File ga yozilmoqda❗️(Server ga Yuguur)`,
       );
 
-      this.logger.error(
-        'CRITICAL: Redis ham olyapti! Ma’lumot faylga yozildi.',
-      );
+      const filePath = path.join(process.cwd(), 'failed_fines.log');
+      fs.appendFileSync(filePath, JSON.stringify(logData) + '\n');
+
+      this.logger.error('Error handling failed delivery: ', error.message);
+    }
+  }
+
+  async sendTelegramNotification(message: string) {
+    const now = Date.now();
+    if (now - this.lastTelegramNotifyTime > this.TG_NOTIFY_COOLDOWN) {
+      await this.telegramService.notify(message);
+      this.lastTelegramNotifyTime = now;
     }
   }
 }

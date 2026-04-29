@@ -12,8 +12,10 @@ export class RabbitService {
   private readonly logger = new Logger(RabbitService.name);
 
   constructor(
-    @Inject(RABBIT_RECEIVED_CLIENT) private readonly receivedClient: ClientProxy,
-    @Inject(RABBIT_COLLECTED_CLIENT) private readonly collectedClient: ClientProxy,
+    @Inject(RABBIT_RECEIVED_CLIENT)
+    private readonly receivedClient: ClientProxy,
+    @Inject(RABBIT_COLLECTED_CLIENT)
+    private readonly collectedClient: ClientProxy,
   ) {}
 
   async emitToReceived(data: any) {
@@ -37,13 +39,11 @@ export class RabbitService {
       const record = new RmqRecordBuilder(data)
         .setOptions({
           persistent: true,
-          headers: {
-            'x-sent-at': new Date().toISOString(),
-          },
+          headers: { 'x-sent-at': new Date().toISOString() },
         })
         .build();
 
-      await firstValueFrom(client.emit(pattern, record));
+      await firstValueFrom(client.emit(pattern, record).pipe(timeout(2000)));
       return true;
     } catch (error: any) {
       this.logger.error(`RabbitMQ emit error [${pattern}]: ${error.message}`);

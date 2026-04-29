@@ -13,11 +13,15 @@ const commonRmqOptions = (
 ): RmqOptions => ({
   transport: Transport.RMQ,
   options: {
-    // ! belgisi yoki || orqali undefined emasligini ta'minlaymiz
     urls: [config.get<string>('rabbit.url') || 'amqp://localhost:5672'],
     queue: queueName,
-    queueOptions: { durable: true },
-    socketOptions: { heartbeatIntervalInSeconds: 60 },
+    queueOptions: {
+      durable: true,
+    },
+    socketOptions: {
+      heartbeatIntervalInSeconds: 60, // heartbeat vaqti 60 soniya
+      reconnectTimeInSeconds: 5, // qayta ulanish vaqti 5 soniya
+    },
   },
 });
 
@@ -29,10 +33,9 @@ const commonRmqOptions = (
         name: RABBIT_RECEIVED_CLIENT,
         inject: [ConfigService],
         useFactory: (config: ConfigService) =>
-          // config.get ga ham default qiymat yoki casting beramiz
           commonRmqOptions(
             config,
-            config.get<string>('rabbit.queues.incoming') || 'incoming_queue',
+            config.get<string>('rabbit.queues.incoming') || 'fines_incoming',
           ),
       },
       {
@@ -41,12 +44,12 @@ const commonRmqOptions = (
         useFactory: (config: ConfigService) =>
           commonRmqOptions(
             config,
-            config.get<string>('rabbit.queues.collector') || 'collector_queue',
+            config.get<string>('rabbit.queues.collector') || 'fines_collected',
           ),
       },
     ]),
   ],
   providers: [RabbitService],
-  exports: [ClientsModule, RabbitService],
+  exports: [RabbitService],
 })
 export class RabbitModule {}

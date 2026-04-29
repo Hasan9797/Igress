@@ -3,9 +3,10 @@ import { InboundService } from './inbound.service';
 import { InboundController } from './inbound.controller';
 import { RabbitModule } from '@/infrastructure/rabbit/rabbit.module';
 import { FailedFinesModule } from '../failed-fines/failed-fines.module';
+import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
-  imports: [RabbitModule, FailedFinesModule],
+  imports: [RabbitModule, FailedFinesModule, TelegramModule],
   controllers: [InboundController],
   providers: [InboundService],
 })

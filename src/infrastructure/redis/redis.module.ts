@@ -3,7 +3,7 @@ import { RedisService } from './redis.service';
 import { RedisModule as IoredisModule } from '@nestjs-modules/ioredis';
 import { ConfigService } from '@nestjs/config';
 
-@Global() // Global qilsangiz, boshqa modullarda import qilish shart bo'lmaydi
+@Global()
 @Module({
   imports: [
     IoredisModule.forRootAsync({

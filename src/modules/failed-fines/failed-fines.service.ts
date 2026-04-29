@@ -9,7 +9,6 @@ export class FailedFinesService {
 
   async saveFailedFines(data: any[]) {
     try {
-      console.log(data);
       await this.db.insert(failedFines).values(data);
     } catch (error: any) {
       this.logger.error(`Failed to save failed fine: ${error.message}`);
