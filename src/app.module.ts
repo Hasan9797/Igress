@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { InboundModule } from './modules/inbound/inbound.module';
@@ -14,13 +14,24 @@ import redisConfig from './common/config/redis.config';
 import rabbitConfig from './common/config/rabbit.config';
 import { TelegramModule } from './modules/telegram/telegram.module';
 import telegramConfig from './common/config/telegram.config';
+import { FailedFinesController } from './modules/failed-fines/failed-fines.controller';
+import { GatewayCheckMiddleware } from './common/middleware/gateway.middleware';
+import { AuthModule } from './modules/auth/auth.module';
+import authConfig from './common/config/auth.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, redisConfig, rabbitConfig, telegramConfig],
+      load: [
+        databaseConfig,
+        redisConfig,
+        rabbitConfig,
+        telegramConfig,
+        authConfig,
+      ],
     }),
+    AuthModule,
     ScheduleModule.forRoot(),
     RedisModule,
     DrizzleModule,
@@ -33,4 +44,8 @@ import telegramConfig from './common/config/telegram.config';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(GatewayCheckMiddleware).forRoutes(FailedFinesController);
+  }
+}

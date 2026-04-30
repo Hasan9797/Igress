@@ -2,49 +2,44 @@ import {
   Controller,
   HttpCode,
   Post,
-  Body,
   HttpStatus,
-  Logger,
   Get,
+  UseGuards,
+  Query,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FailedFinesService } from './failed-fines.service';
+import { AuthGuard } from '@/common/guards/auth.guard';
 
 @Controller('failed-fines')
+@UseGuards(AuthGuard)
 export class FailedFinesController {
   constructor(private readonly failedFinesService: FailedFinesService) {}
 
   @Get('list')
   @HttpCode(HttpStatus.OK)
-  getFailedFines() {
-    // Bu yerda xatolik bilan ishlangan jarayonlar ro'yxatini qaytarish mumkin
-    return { success: true, data: [] };
+  async getFailedFines(@Query() query: any) {
+    const data = await this.failedFinesService.getFailedFines(query);
+    return { success: true, data };
   }
 
-  @Get('/get')
+  @Get('find/:id')
   @HttpCode(HttpStatus.OK)
-  processFailedFines() {
-    // Bu yerda xatolik bilan ishlangan jarayonlar ro'yxatini qaytarish mumkin
-    return { success: true, data: [] };
+  async getFailedFine(@Param('id', ParseIntPipe) id: number) {
+    const data = await this.failedFinesService.getFailedFine(id);
+    return { success: true, data };
   }
 
   @Post('retry')
   @HttpCode(HttpStatus.OK)
   saveFailedFines() {
-    // Bu yerda xatolik bilan ishlangan jarayonlar ro'yxatini qaytarish mumkin
-    return { success: true, data: [] };
-  }
-
-  @Post('update')
-  @HttpCode(HttpStatus.OK)
-  updateFailedFines() {
-    // Bu yerda xatolik bilan ishlangan jarayonlar ro'yxatini qaytarish mumkin
     return { success: true, data: [] };
   }
 
   @Post('delete')
   @HttpCode(HttpStatus.OK)
   deleteFailedFines() {
-    // Bu yerda xatolik bilan ishlangan jarayonlar ro'yxatini qaytarish mumkin
     return { success: true, data: [] };
   }
 }
