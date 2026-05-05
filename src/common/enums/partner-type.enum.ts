@@ -1,4 +1,4 @@
 export const enum PartnerType {
-  TELECOM_SOFT = 'TELECOMSOFT',
+  TELECOM_SOFT = 'TELECOM-SOFT',
   ASBT = 'ASBT',
 }
